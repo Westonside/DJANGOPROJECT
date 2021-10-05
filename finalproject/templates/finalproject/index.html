@@ -1,0 +1,677 @@
+{% extends "finalproject/layout.html" %}
+{% block title %}Home{% endblock %}
+{% block body %}
+<div id="stocks" />
+
+<script type="text/babel">
+
+    class App extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                values: [],
+                stocksList: [],
+                apiKey: '4345e4711c6f60f00ffbee7af595da8a',
+                loading: true,
+                selectedStock: [],
+                description: "",
+                image: "",
+                choose: false,
+                viewPosts: false,
+                counter: 0,
+                quantity: 11,
+                posts: [],
+                likeColor: 'blue',
+                initalPosts: false,
+                inputText: '',
+                canEdit: false,
+                pk: '',
+                typingStuff: false,
+                specificStock: ''
+
+            }
+            this.selectTracked = this.selectTracked.bind(this);
+
+        }
+
+
+
+        async componentDidUpdate(prevProps, prevState) {
+            if (prevState.choose !== this.state.choose && this.state.choose) {
+                this.getStockData();
+            }
+            if (prevState.viewPosts !== this.state.viewPosts) {
+                //research why the function is rendering with an empty array
+                this.checkPost("all");
+                setTimeout(() => {
+                    let referenced = document.querySelectorAll('.referenced_stock');
+                    if (referenced !== undefined) {
+                        referenced.forEach(val => {
+                            val.addEventListener('click', () => {
+                                console.log('detecting a click')
+                                this.referenceClick(val.textContent);
+                        })
+                    })
+                }
+                }, 200)
+                
+            }
+
+        }
+
+        checkPost = (section) => {
+            if (section === "all") {
+                fetch("/getPosts/all")
+                    .then(response => response.json())
+                    .then(res => {
+                        let other = res;
+                        console.log(other)
+                        this.setState({
+                            posts: other,
+
+                            loading: false
+                        });
+                    })
+            }
+
+        }
+
+        getStockData = () => {
+            //make a get request to get the SQL model for the users stocks that they follow
+            let stockList;
+            fetch("/getStocks")
+                .then(response => response.json())
+                .then(res => {
+                    if (res.success) {
+                        let stockList = res.stocks;
+                        let all = stockList.split(',');
+                      
+
+                        //pop up to set the users stocksAAPL,FB,SPOT,NVDA,AMD
+                        fetch(`https://financialmodelingprep.com/api/v3/quote/${all.toString()}?apikey=${this.state.apiKey}`)
+                            .then(result => result.json())
+                            .then(value => {
+                                let other = [];
+                                // add all values until the values are undefined since the api allows up to 5 stocks
+                                for (let i of value) {
+                                    other.push(i);
+                                    if (i === undefined) {
+                                        break;
+                                    }
+                                }
+                                
+                                this.setState({
+                                    values: other,
+                                    loading: false
+                                });
+
+
+                            });
+                    }
+                    else {
+                        // if the first one is empty string meaning that there is nothing inputted for the stock values
+                        //default stocks that the user will see if cookies disabled or nothing selected
+                        fetch(`https://financialmodelingprep.com/api/v3/quote/AAPL,FB,SPOT,NVDA,AMD?apikey=${this.state.apiKey}`)
+                            .then(result => result.json())
+                            .then(value => {
+                                this.setState({
+                                    values: value,
+                                    loading: false
+                                })
+                                let test = [];
+
+                                for (let i = 0; i < value.length; i++) {
+                                    test.push(this.state.values[i])
+                                }
+                                this.setState({ values: test, choose: true })
+                            });
+
+                    }
+
+
+                });
+        }
+
+
+
+        //TO DO LIST
+        //ALLOW FOR THE USER TO CHOOSE WHAT STOCKS THAT THEY FOLLOW USING SQL, COOKIES DO NOT WORKS
+        //MAKE A REQUEST TO THE SERVER AT START AND CHECK IF THEIR STOCKS ARE EMPTY IF THEY ARE THEN DONT ALLOW FOR THEM TO PUSH BUTTONS AND THEN MAKE PUT REQUEST TO THE SERVER WITH THE INPUTTED STOCKS
+
+
+
+        //ALLOW FOR THE USER TO FOLLOW OTHERS AND SEE THEIR POSTS WHEN THEY GO TO ALL POSTS ALLOW FOR ALL POSTS TOO ALLOW FOR FOLLOWING USING MODELS ACTIONS
+        //ALLOW FOR THE USERS TO POST ABOUT A CERTAIN STOCK
+        componentDidMount() {
+            //runs after the first render lifecycle 
+            let start = this.state.counter;
+            let end = start + this.state.quantity - 1;
+            console.error(start, end)
+            //increment the end so that there start can be somewhere different when requested
+            this.setState({ counter: end })
+            //make a fetch request for the stocks that the user follows search sql database
+            this.getStockData();
+
+
+
+
+        }
+
+        stockClick = (event) => {
+
+            let stockname = ""
+            if (event.target.tagName === "P") {
+                stockname = event.target.parentElement.parentElement.parentElement.dataset.value;
+                console.log(event.target.parentElement.parentElement.parentElement.dataset.value);
+                this.setState({ selectedStock: event.target.parentElement.parentElement.parentElement.dataset.value })
+
+            }
+            else {
+                stockname = event.target.parentElement.parentElement.dataset.value;
+                console.log(event.target.parentElement.parentElement.dataset.value);
+                this.setState({ selectedStock: event.target.parentElement.parentElement.dataset.value });
+            }
+            let popup = document.getElementById('popup_post');
+            popup.style.animationFillMode = 'forwards';
+            popup.style.display = 'block';
+            popup.style.animationPlayState = 'running';
+
+
+
+            fetch(`https://financialmodelingprep.com/api/v3/profile/${stockname}?apikey=${this.state.apiKey}`)
+                .then(result => result.json())
+                .then(final => {
+
+                    console.log(final, final[0].description);
+                    this.setState({ description: final[0].description, image: final[0].image });
+                })
+        }
+
+        setCookie = (cname, cvalue, exdays) => {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            var expires = "expires=" + d.toUTCString();
+            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+            console.log('testing');
+        }
+
+
+
+        somethingElse = () => {
+            console.log("somethin");
+        }
+
+        close_popUp = () => {
+
+            // setCookie('stock', 'nvda', 10);
+            let popup = document.getElementById('popup_post');
+            if (document.getElementById('popup_post_chooser') !== null) {
+                document.getElementById('popup_post_chooser').style.display = 'none';
+
+            }
+            // popup.style.animationFillMode = 'backwards';
+            // popup.style.animationPlayState = 'running';    
+            popup.style.display = 'none';
+            this.setState({
+                image: "",
+                description: "",
+                choose: false
+            })
+
+        }
+
+        getCookie = (cname) => {
+            var name = cname + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+
+
+
+        selectTracked = (event) => {
+            let something = document.getElementById('followed_stocks').value;
+            console.log(something);
+            event.preventDefault();
+            //post the data to the route and if the stocks exist then save them in the database and then set state of choose to false
+            fetch('/changeStock', {
+                method: 'POST',
+                body: JSON.stringify({
+                    stocks: something.toUpperCase()
+                })
+            })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.success === true) {
+                        this.close_popUp();
+                    }
+                    this.setState({ choose: false });
+                    this.getStockData();
+                });
+
+
+        }
+
+        close_popUp_poster = () => {
+
+            document.getElementById('popup_post_poster').style.display = 'none';
+            this.setState({ inputText: '', typingStuff: false })
+        }
+
+        editPost = (event) => {
+            let id = event.target.dataset.value;
+            let content = document.getElementById(id).innerText;
+            this.setState({ inputText: content });
+            document.getElementById('popup_post_poster').style.display = 'block';
+            this.setState({ canEdit: true, pk: id, typingStuff: true })
+
+            console.log(content);
+
+            //make a put request to the server with the new body of the post
+        }
+
+        changeStocks = () => {
+            this.setState({ choose: true });
+        }
+
+        postPost = (event, methodType) => {
+            let { inputText } = this.state;
+            let { canEdit } = this.state;
+            console.log(inputText);
+            //if method type is undefined that means that the a new post is being made
+            console.log(methodType);
+            if (canEdit === false) {
+                console.log('success')
+                if (inputText !== '') {
+                    fetch('/postPost', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            content: inputText
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(res => {
+                            if (res.success) {
+                                document.getElementById('popup_post_poster').style.display = 'none';
+                                this.setState({ inputText: '', typingStuff: false });
+                                this.close_popUp_poster();
+                                this.checkPost('all');
+                            }
+                            else {
+                                console.error('failure')
+                            }
+                        })
+                }
+            }
+            else {
+                //FOR THE PUT REQUEST ALSO SEND THE PK OF THE POST THE SERVER KNOWS WHAT POST IS BEING EDITED
+                if (inputText !== '') {
+                    fetch('/postPost', {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            content: inputText,
+                            id: this.state.pk
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(res => {
+                            if (res.success) {
+                                document.getElementById('popup_post_poster').style.display = 'none';
+                                this.setState({ inputText: '' });
+                                this.close_popUp_poster();
+                                this.checkPost('all');
+                                this.setState({ canEdit: false, pk: '', typingStuff: false });
+                            }
+                            else {
+                                console.error('failure')
+                            }
+                        })
+                }
+
+            }
+
+            event.preventDefault();
+
+        }
+
+        referencePost = () => {
+            this.setState({
+                inputText: `||${this.state.selectedStock}||`,
+                viewPosts: true,
+            })
+            console.log('testing pop up reference ', document.getElementById('popup_post_poster'));
+            setTimeout(() => { document.getElementById('newPost').click(); }, 500)
+
+            //activate the pop up poster i believe it does not pop up currently becaues the page has not yet rendered 
+
+        }
+
+        getNext = () => {
+            let start = this.state.counter;
+            //get all posts from start to the end and the end is just quantity posts difference between the start
+            let end = start + this.state.quantity - 1;
+
+            console.error(start, end);
+            //set the counter to be the the end + 1 because then the start will start on the post just before the ending of the last set of the posts
+            this.setState({ counter: end });
+            //the section variable is a placeholder for now set the state of the section that is being viewed
+            let section = 'all';
+            //allow for the section to be chosen
+            //get the data and then have it be processed
+            fetch(`/getPosts/${section}?start=${start}&end=${end}`)
+                .then(response => response.json())
+                .then(res => {
+                    console.log(res);
+                    this.setState({ posts: res });
+                });
+        }
+
+        likePost = (event) => {
+            //make a put post request and then adjust accordingly
+            console.log(event.target);
+            let postId = event.target.dataset.value;
+            console.log(postId)
+            event.target.style.color = "blue";
+
+            // send the fetch request to like the newest post
+            fetch('/likePost', {
+                method: 'POST',
+                body: JSON.stringify({
+                    postId: postId
+                })
+            })
+                .then(response => response.json())
+                .then(res => {
+                    this.checkPost('all');
+                });
+
+
+        }
+        referenceClick = (text) => {
+            console.log(text, 'this is the event that is happening')
+            //get the stock that was clicked in 
+            fetch(`https://financialmodelingprep.com/api/v3/profile/${text}?apikey=${this.state.apiKey}`)
+                .then(result => result.json())
+                .then(final => {
+
+                    console.log(final, final[0].description);
+                    this.setState({ description: final[0].description, image: final[0].image });
+                })
+
+
+
+
+            let popup = document.getElementById('popup_post');
+            popup.style.animationFillMode = 'forwards';
+            popup.style.display = 'block';
+            popup.style.animationPlayState = 'running';
+            
+
+                    
+        }
+
+       
+
+        processText = (text) => {
+            console.log(text, 'processing')
+            let reg = /\|\|[A-Z]+\|\|/
+            let match = reg.exec(text)
+            let theThing = match[0].replace(/\|/g, "");
+            let newOne = `<a href="#" class = "referenced_stock">${theThing}</a>`
+            console.log(text.replace(reg, newOne))
+
+            return { __html: text.replace(reg, newOne) }
+        }
+
+        // updateText = (event) =>{
+        //     this.setState({inputText:event.target.value});
+        // }
+
+
+        //1)fix the formatting of the 
+        //2) get the links at the top of the page working 
+        //3) allow for the user to post about a certain stock
+        //4) allow for users to like posts 
+        //5) allow for users to follow and unfollow other users
+
+
+        render() {
+            const { values } = this.state;
+            console.log(values);
+            const { posts } = this.state;
+
+
+            const likeStyle = {
+                color: 'blue'
+            }
+            // console.log(values);
+            //when the fetch has not gotten the data yet
+            if (this.state.loading) {
+                return 'Loading...';
+            }
+
+            //the render runs twice if the componentdidmount sets the state
+            console.log("here is the conditional ", this.state.viewPosts, " here are the posts ", posts);
+            if (this.state.viewPosts) {
+                return (
+                    <div id="posts">
+
+
+                        <h2>Posts </h2>
+
+                        <button id="newPost" onClick={() => { document.getElementById('popup_post_poster').style.display = 'block'; this.setState({ typingStuff: true }) }}>New Post</button>
+                        <hr></hr>
+                        <br></br>
+                        <div class="container">
+                            <div className="row">
+                                <div id="sidebar_wrap" className="col-4 col-md-4">
+
+                                    <ul id="sidebar_nav" >
+                                        <li><a href="#" onClick={this.changeStocks}>Change Followed Stocks</a></li>
+                                        <li><a href="#" onClick={() => { this.setState({ viewPosts: true }) }}>View Posts</a></li>
+                                        <li><a href="#" onClick={() => { this.setState({ viewPosts: false, counter: 10 }) }}>My stocks</a></li>
+
+                                    </ul>
+                                </div>
+
+                                <div id="posts" className="col-8 col-md-8">
+                                    {
+                                        this.state.posts.map(val => {
+                                            return (
+
+                                                <div className="single_post">
+                                                    <br></br>
+                                                    <br></br>
+                                                    {
+                                                        /\|\|[A-Z]+\|\|/.test(val.content) &&
+                                                        //{this.processText(val.content)}
+                                                        <p><span className="user" id={val.user}><a href="#">{val.user}</a></span> posted: <span className="post_content" id={val.pk} dangerouslySetInnerHTML={this.processText(val.content)} /></p>
+
+
+                                                    }
+                                                    {
+                                                        !/\|\|[A-Z]+\|\|/.test(val.content) &&
+                                                        <p><span className="user" id={val.user}><a href="#">{val.user}</a></span> posted: <span className="post_content" id={val.pk}>{val.content}</span></p>
+                                                    }
+                                                    <span className="timeStamp">{val.timestamp}</span>
+                                                    {val.canEdit &&
+                                                        <button className="edit_button" data-value={val.pk} onClick={this.editPost} disabled={this.state.typingStuff}>Edit</button>
+                                                    }
+                                                    <span class="likes">{val.likes}</span>
+                                                    {val.liked &&
+                                                        <i style={likeStyle} data-value={val.pk} onClick={this.likePost} class="fa fa-thumbs-up"></i>
+                                                    }
+                                                    {!val.liked &&
+                                                        <i data-value={val.pk} onClick={this.likePost} class="fa fa-thumbs-up"></i>
+                                                    }
+
+                                                </div>
+                                            )
+                                        })
+                                    }
+                                    <button id="next" className="btn btn-light" onClick={this.getNext}>Next</button>
+                                </div>
+
+
+                            </div>
+                        </div>
+                        <div id="popup_post_poster">
+                            <div className="create_post_head">
+                                <div className="title">
+                                    {/*<p id="edit_create_title">Create a new post</p>*/}
+
+                                    <button className="close-button" onClick={this.close_popUp_poster}>&times;</button>
+                                </div>
+                            </div>
+                            <div className="create_post_body">
+
+                                <form onSubmit={this.postPost} >
+
+                                    <div id="stock_page">
+
+                                        <p>Post contents</p>
+                                    </div>
+                                    <textarea class="form-control" id="postContent" rows="3" value={this.state.inputText} onChange={(event) => { this.setState({ inputText: event.target.value }) }} onKeyPress={this.inputKeyPress}></textarea>
+
+                                    <button type="submit" className="btn btn-primary mb-2" id="send_off_post">Submit</button>
+
+                                    {/* add function that how checks if the user is authenticated and show the submit edit feature or */}
+                                </form>
+                            </div>
+                        </div>
+
+                        <div id="popup_post">
+                        <div className="create_post_head">
+                            <div className="title">
+                                {/*<p id="edit_create_title">Create a new post</p>*/}
+
+                                <button className="close-button" onClick={this.close_popUp}>&times;</button>
+                            </div>
+                        </div>
+                        <div className="create_post_body">
+
+                            <form onSubmit={this.postPost} >
+
+                                <div id="stock_page">
+                                    <h2 id="stock_header"> {this.state.selectedStock} </h2>
+                                    <img src={this.state.image} id="stockImg"></img>
+
+
+                                    <p id="stock_description" className=""> {this.state.description} </p>
+                                </div>
+
+                                <button className="btn btn-primary mb-2" id="reference" onClick={this.referencePost}>Reference in post</button>
+                                {/* add function that how checks if the user is authenticated and show the submit edit feature or */}
+                            </form>
+
+                        </div>
+                    </div>
+                    </div>
+                );
+            }
+
+
+            //change how the listing is displayed maybe have it in a table and then also get rid of the listings div later
+            return (
+                <div id="mainBit">
+
+                    <h2 id="header"> Welcome </h2>
+                    <div className="row">
+                        <div id="sidebar_wrap">
+
+                            <ul id="sidebar_nav">
+                                <li><a href="#" onClick={this.changeStocks}>Change Followed Stocks</a></li>
+                                <li><a href="#" onClick={() => { this.setState({ viewPosts: true }) }}>View Posts</a></li>
+                                <li><a href="#" onClick={() => { this.setState({ viewPosts: false, counter: 10 }) }}>My stocks</a></li>
+
+                            </ul>
+                        </div>
+
+                        <div id="listings" className="col-5 col-md-12" >
+                            {
+                                // NEED TO ALIGN THE ROWS WITH EACH COLUMNS !!
+                                values.map(value =>
+
+                                    <div className="listing">
+                                        <button type="button" disabled={this.state.choose} className="col-md-6 offset-md-3" data-value={value.symbol} onClick={this.stockClick} id={value.symbol}><div className="row"><div className="col-12 col-md-1"><p className="stock_values">{value.symbol}</p></div><div className="col-12 col-md-7" id="stock_name"><p className="stock_values">{value.name}</p></div><div className="col-12 col-md-2"><p className="stock_values">${Math.floor(value.price * 100) / 100}</p></div><div className="col-12 col-md-1"><p className="stock_values">{value.changesPercentage}%</p></div></div></button>
+                                    </div>
+
+                                )
+                            }
+                        </div>
+
+                    </div>
+
+
+                    <div id="popup_post">
+                        <div className="create_post_head">
+                            <div className="title">
+                                {/*<p id="edit_create_title">Create a new post</p>*/}
+
+                                <button className="close-button" onClick={this.close_popUp}>&times;</button>
+                            </div>
+                        </div>
+                        <div className="create_post_body">
+
+                            <form onSubmit={this.postPost} >
+
+                                <div id="stock_page">
+                                    <h2 id="stock_header"> {this.state.selectedStock} </h2>
+                                    <img src={this.state.image} id="stockImg"></img>
+
+
+                                    <p id="stock_description" className=""> {this.state.description} </p>
+                                </div>
+
+                                <button className="btn btn-primary mb-2" id="reference" onClick={this.referencePost}>Reference in post</button>
+                                {/* add function that how checks if the user is authenticated and show the submit edit feature or */}
+                            </form>
+
+                        </div>
+                    </div>
+                    {this.state.choose &&
+
+                        <div id="popup_post_chooser">
+                            <div className="create_post_head">
+                                <div className="title">
+                                    {/*<p id="edit_create_title">Create a new post</p>*/}
+
+                                    <button className="close-button" onClick={this.close_popUp}>&times;</button>
+                                </div>
+                            </div>
+                            <div className="create_post_body">
+
+                                <form onSubmit={this.selectTracked} >
+
+                                    <div id="stock_page">
+
+                                        <p> Please enter up to 5 stock symbols that you would like to track, each value being seperated by a comma </p>
+                                    </div>
+                                    <textarea class="form-control" id="followed_stocks" rows="3"></textarea>
+
+                                    <button type="submit" className="btn btn-primary mb-2" id="work">Work</button>
+                                    {/* add function that how checks if the user is authenticated and show the submit edit feature or */}
+                                </form>
+                            </div>
+                        </div>
+
+                    }
+                </div>
+
+            );
+        }
+    }
+
+    ReactDOM.render(<App />, document.querySelector('#stocks'));
+
+</script>
+{% endblock %}

@@ -1,0 +1,54 @@
+.form-group{
+    position: relative;
+    left:30%;
+    max-width: 30%;
+}
+#butt{
+    position: relative;
+    left: 42%;
+}
+
+#logo{
+    position: relative;
+    left:40%;
+    max-width: 15em;
+    max-height: 15em;
+}
+
+.form-control{
+    margin-bottom: 2.5em;
+}
+
+#register_text{
+    margin-top: 2em;
+    position:relative;
+    left:35%
+}
+
+
+
+#popup_post{
+    animation-name: appear;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+    animation-play-state: paused;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid black;
+    border-radius: 10px;
+    /* give high z index cuz drawing over  */
+    z-index: 10;
+    background-color: white;
+    width: 500px;
+    max-width: 80%;
+    display: none;
+    opacity: 0;
+}
+
+.close_button{
+    background-color:white;
+    border: none;
+}
+

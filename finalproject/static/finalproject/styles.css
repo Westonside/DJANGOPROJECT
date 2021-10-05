@@ -1,0 +1,233 @@
+#centerArea{
+    /* text-align: center; */
+    border: dashed;
+    max-width: 50vw;
+    position: relative;
+    left: 25%;
+    top: 20%;
+    margin-top: 5em;
+    
+}
+#logo{
+    max-width: 6em;
+    max-height: 9em;
+    
+}
+.navbar-brand{
+    max-width: 30vw;
+}
+
+.nav-link{
+    font-size: 1.3em;
+}
+#navbarNav{
+    max-width: 50vw;
+}
+#navbarNav::li{
+    margin-left: 3em;
+}
+.navbar-nav{
+    margin-left: 2em;
+    max-width: 40vw;
+}
+
+#navbar{
+    max-height: 5.8em;
+}
+
+#siderbar > a:hover{
+    text-decoration: none;
+}
+
+#listings{
+    margin-top: 2em;
+    padding-right: 3em;
+    overflow: hidden;
+    /* border:3px solid black; */
+    /* text-align: center; */
+}
+.listing>button{
+    border-radius: 15px;
+    margin-top: 1em;
+    max-width: 64vw;
+    outline: none;
+    background-color: white;
+    border:none;
+    text-align: left;
+    background-color: gainsboro;
+    margin-right: 2em;
+}
+
+.listing>button:hover{
+    /* background-color: red; */
+}
+
+#stock_page{
+}
+
+.stock_values{
+    font-size: 20px;
+}
+
+#stock_name{
+    padding-left:1em;
+}
+#stockImg{
+    text-align: center;
+}
+
+@keyframes appear{
+    0%{
+        opacity: 0;
+        height: 0%;
+    }
+    100%{
+        opacity: 1;
+        height: 100%;
+    }
+}
+
+#popup_post{
+    animation-name: appear;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+    animation-play-state: paused;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid black;
+    border-radius: 10px;
+    /* give high z index cuz drawing over  */
+    z-index: 10;
+    background-color: white;
+    width: 500px;
+    max-width: 80%;
+    /* display: none; */
+
+}
+#popup_post_chooser{
+    /* animation-name: appear;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+    animation-play-state: paused; */
+    /* display:none; */
+    display:block;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid black;
+    border-radius: 10px;
+    /* give high z index cuz drawing over  */
+    z-index: 10;
+    background-color: white;
+    width: 700px;
+    max-width: 80%;
+    /* display: none; */
+}
+
+.close-button{
+    font-size: 2em;
+    background-color:white;
+    border: none;
+    position: relative;
+    left: 97%;
+}
+#popup_post{
+    width: 75vw;
+    max-height: 75vh;
+    overflow: scroll;
+}
+#sidebar_nav{
+    list-style-type: none ;
+    margin:0;
+    padding:0;
+}
+#sidebar_wrap{
+    margin-left: 0;
+    padding-left:2em;
+}
+.container{
+    margin:0%;
+}
+#post_container{
+    margin-left:2em;
+}
+
+.single_post{
+    background-color: antiquewhite;
+    max-width: 65vw;
+    position:relative;
+    /* left:35%; */
+}
+.timeStamp{
+    font-size: 9px;
+    font-weight: bold;
+    font-style:italic;
+}
+#popup_post_poster{
+    display:none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid black;
+    border-radius: 10px;
+    /* give high z index cuz drawing over  */
+    z-index: 10;
+    background-color: white;
+    width: 700px;
+    max-width: 80%;
+}
+
+#next{
+    position:relative;
+    left:35%;
+}
+
+.edit_button{
+    background-color: none;
+    border:none;
+}
+
+.container{
+    width:100vw;
+}
+
+.fa:hover{
+    color:red;
+}
+.fa{
+    /* color:blue; */
+
+}
+
+@keyframes newPostHover{
+    0%{
+        background-color: red;
+    }
+    25%{
+        background-color: orange;
+    }
+    50%{
+        background-color: yellow;
+    }
+    75%{
+        background-color:green;
+    }
+    100%{
+        background-color:blue;
+    }
+}
+
+
+#newPost{
+    border-radius:0.3em;
+    background-color:white;
+   
+}
+
+#newPost:hover{
+    animation: newPostHover 1.5s;
+}
